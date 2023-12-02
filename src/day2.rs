@@ -8,6 +8,7 @@ struct CubeCounts {
 	blue: u32
 }
 
+/// https://adventofcode.com/2023/day/2
 pub fn main(args: Vec<String>) {
 	
 	let syntax = format!("Syntax: {} {} <file path> [<max_red> <max_green> <max_blue>]", args[0], args[1]);

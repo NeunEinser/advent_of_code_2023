@@ -2,6 +2,7 @@ use std::{process, fs};
 
 use crate::UnwrapOrExit;
 
+/// https://adventofcode.com/2023/day/1
 pub fn main(args: Vec<String>) {
 	let syntax = format!("Syntax: {} {} <file path> [<ignore-words (0 or 1; default 0)>]", args[0], args[1]);
 
