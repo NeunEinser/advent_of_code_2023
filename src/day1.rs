@@ -1,4 +1,6 @@
-use std::{process, fs, fmt::Display};
+use std::{process, fs};
+
+use crate::UnwrapOrExit;
 
 pub fn main(args: Vec<String>) {
 	let syntax = format!("Syntax: {} {} <file path> [<ignore-words (0 or 1; default 0)>]", args[0], args[1]);
@@ -80,26 +82,4 @@ fn get_digit_from_word(input: &str, map: &[(&str, u8)]) -> Option<u8> {
 	}
 
 	None
-}
-
-trait UnwrapOrExit<T> {
-	fn unwrap_or_exit(self, msg: &str, code: i32) -> T;
-}
-
-impl<T> UnwrapOrExit<T> for Option<T> {
-	fn unwrap_or_exit(self, msg: &str, code: i32) -> T {
-		self.unwrap_or_else(|| {
-			eprintln!("{msg}");
-			process::exit(code);
-		})
-	}
-}
-
-impl<T, E: Display> UnwrapOrExit<T> for Result<T, E> {
-	fn unwrap_or_exit(self, msg: &str, code: i32) -> T {
-		self.unwrap_or_else(|err| {
-			eprintln!("{msg}: {err}");
-			process::exit(code);
-		})
-	}
 }

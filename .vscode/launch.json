@@ -5,13 +5,19 @@
 	"version": "0.2.0",
 	"configurations": [
 		{
+			"name": "Debug Day 1",
 			"type": "cppvsdbg",
 			"request": "launch",
-			"name": "Debug",
 			"program": "${workspaceFolder}/target/debug/advent_of_code_2023.exe",
-			"args": [
-				"input"
-			],
+			"args": [ "day1", "input" ],
+			"cwd": "${workspaceRoot}"
+		},
+		{
+			"name": "Debug Day 2",
+			"type": "cppvsdbg",
+			"request": "launch",
+			"program": "${workspaceFolder}/target/debug/advent_of_code_2023.exe",
+			"args": [ "day2", "input", "12", "13", "14" ],
 			"cwd": "${workspaceRoot}"
 		}
 	]

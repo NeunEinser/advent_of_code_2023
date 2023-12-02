@@ -1,6 +1,7 @@
-use std::{env, process};
+use std::{env, process, fmt::Display};
 
 mod day1;
+mod day2;
 
 fn main() {
 	let args: Vec<String> = env::args().collect();
@@ -12,10 +13,33 @@ fn main() {
 
 	match &args[1][..] {
 		"day1" => day1::main(args),
+		"day2" => day2::main(args),
 		cmd => {
 			eprintln!("Syntax: {} day<1-25>", args[0]);
 			eprintln!("Unknown command: {}", cmd);
 			process::exit(1);
 		}
+	}
+}
+
+trait UnwrapOrExit<T> {
+	fn unwrap_or_exit(self, msg: &str, code: i32) -> T;
+}
+
+impl<T> UnwrapOrExit<T> for Option<T> {
+	fn unwrap_or_exit(self, msg: &str, code: i32) -> T {
+		self.unwrap_or_else(|| {
+			eprintln!("{msg}");
+			process::exit(code);
+		})
+	}
+}
+
+impl<T, E: Display> UnwrapOrExit<T> for Result<T, E> {
+	fn unwrap_or_exit(self, msg: &str, code: i32) -> T {
+		self.unwrap_or_else(|err| {
+			eprintln!("{msg}: {err}");
+			process::exit(code);
+		})
 	}
 }
