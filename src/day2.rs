@@ -20,12 +20,12 @@ pub fn main(args: Vec<String>) {
 
 	let content = fs::read_to_string(&args[2]).unwrap_or_exit("Could not read file content as Utf-8 string", 1);
 	let max = if args.len() == 3 {
-		[0; 3]
+		[0u32; 3]
 	} else {
 		[ 
-			args[3].parse::<u32>().unwrap_or_exit(&format!("{syntax}\nCould not read <max_red>, expected number, got {}", args[3]), 1),
-			args[4].parse::<u32>().unwrap_or_exit(&format!("{syntax}\nCould not read <max_green>, expected number, got {}", args[4]), 1),
-			args[5].parse::<u32>().unwrap_or_exit(&format!("{syntax}\nCould not read <max_blue>, expected number, got {}", args[5]), 1)
+			args[3].parse().unwrap_or_exit(&format!("{syntax}\nCould not read <max_red>, expected number, got {}", args[3]), 1),
+			args[4].parse().unwrap_or_exit(&format!("{syntax}\nCould not read <max_green>, expected number, got {}", args[4]), 1),
+			args[5].parse().unwrap_or_exit(&format!("{syntax}\nCould not read <max_blue>, expected number, got {}", args[5]), 1)
 		]
 	};
 

@@ -40,12 +40,8 @@ pub fn main(args: Vec<String>) {
 
 fn get_first_digit<T>(input: &str, index_iter: T, ignore_words: bool) -> Option<u8>
 	where T: Iterator<Item = usize> {
-	for offset in index_iter {
-		if let Some(digit) = get_digit(&input[offset..], ignore_words) {
-			return Some(digit)
-		}
-	}
-	None
+	let mut index_iter = index_iter;
+	index_iter.find_map(|off| get_digit(&input[off..], ignore_words))
 }
 
 fn get_digit(input: &str, ignore_words: bool) -> Option<u8> {
@@ -56,22 +52,15 @@ fn get_digit(input: &str, ignore_words: bool) -> Option<u8> {
 	let first_byte = input.as_bytes()[0];
 	match first_byte {
 		b'0'..=b'9' => Some(first_byte - b'0'),
-		first_byte => {
-			if ignore_words {
-				None
-			} else {
-				match first_byte {
-					b'z' | b'Z' => get_digit_from_word(input, &[("zero", 0)]),
-					b'o' | b'O' => get_digit_from_word(input, &[("one", 1)]),
-					b't' | b'T' => get_digit_from_word(input, &[("two", 2), ("three", 3)]),
-					b'f' | b'F' => get_digit_from_word(input, &[("four", 4), ("five", 5)]),
-					b's' | b'S' => get_digit_from_word(input, &[("six", 6), ("seven", 7)]),
-					b'e' | b'E' => get_digit_from_word(input, &[("eight", 8)]),
-					b'n' | b'N' => get_digit_from_word(input, &[("nine", 9)]),
-					_ => None
-				}
-			}
-		}
+		_ if ignore_words => None,
+		b'z' | b'Z' => get_digit_from_word(input, &[("zero", 0)]),
+		b'o' | b'O' => get_digit_from_word(input, &[("one", 1)]),
+		b't' | b'T' => get_digit_from_word(input, &[("two", 2), ("three", 3)]),
+		b'f' | b'F' => get_digit_from_word(input, &[("four", 4), ("five", 5)]),
+		b's' | b'S' => get_digit_from_word(input, &[("six", 6), ("seven", 7)]),
+		b'e' | b'E' => get_digit_from_word(input, &[("eight", 8)]),
+		b'n' | b'N' => get_digit_from_word(input, &[("nine", 9)]),
+		_ => None
 	}
 }
 
