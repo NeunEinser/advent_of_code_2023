@@ -41,7 +41,7 @@ pub fn main(args: Vec<String>) {
 		}
 
 		let line = &line[5..];
-		let game_id_length = line.find(":").unwrap_or_exit(&err, 1);
+		let game_id_length = line.find(':').unwrap_or_exit(&err, 1);
 		let game_id = String::from(&line[..game_id_length]).parse::<u32>().unwrap_or_exit(&err, 1);
 
 		let counts = get_min_cubes(line[game_id_length + 1..].trim()).unwrap_or_exit(&err, 1);
@@ -67,11 +67,11 @@ fn get_min_cubes(line: &str) -> Result<CubeCounts, String> {
 	};
 
 	while !line.is_empty() {
-		let subset_len = line.find(";").unwrap_or(line.len());
+		let subset_len = line.find(';').unwrap_or(line.len());
 		let mut subset = line[..subset_len].trim();
 
 		while !subset.is_empty() {
-			let len = subset.find(",").unwrap_or(subset.len());
+			let len = subset.find(',').unwrap_or(subset.len());
 			let item = subset[..len].trim();
 
 			let num_length = item.find(|c: char| !c.is_ascii_digit()).ok_or(String::from("invalid cube count"))?;

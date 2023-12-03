@@ -77,9 +77,6 @@ fn add_node(nodes: &mut HashMap<(usize, usize), Vec<u32>>, lines: &[&str], i: us
 		return;
 	}
 
-	if !nodes.contains_key(&(i, j)) {
-		nodes.insert((i, j), Vec::new());
-	}
-	let v = nodes.get_mut(&(i, j)).expect("Should be inserted the line before");
+	let v = nodes.entry((i, j)).or_default();
 	v.push(num);
 }
