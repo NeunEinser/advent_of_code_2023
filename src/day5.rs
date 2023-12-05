@@ -30,7 +30,7 @@ pub fn main(args: Vec<String>) {
 }
 
 fn part1<'a, T>(lines: T)
-	where T: Iterator<Item = &'a str> {
+where T: Iterator<Item = &'a str> {
 	let mut lines = lines;
 
 	let mut seeds: HashMap<u64, HashMap<&str, u64>> = lines.next()
@@ -44,39 +44,8 @@ fn part1<'a, T>(lines: T)
 			(value, HashMap::from([("seed", value)]))
 		})
 		.collect();
-
-	let mut maps = Vec::new();
-
-	for line in lines {
-		let line = line.trim();
-		if line.is_empty() {
-			continue;
-		}
-
-		if line.ends_with(" map:") {
-			let parts = line
-				.split_once(' ').unwrap_or_exit(&format!("Found invalid map head {line}"), 1)
-				.0.split_once("-to-")
-				.unwrap_or_exit(&format!("Found invalid map head {line}"), 1);
-
-			maps.push(Map {
-				source_name: parts.0,
-				dest_name: parts.1,
-				mappings: HashMap::new()
-			})
-		} else {
-			let current_map = maps.last_mut().unwrap_or_exit(&format!("Found invalid map head {line}"), 1);
-			let mut parts = line
-				.splitn(3, ' ')
-				.map(|n| n.parse::<u64>().unwrap_or_exit(&format!("Found invalid map content {line}"), 1));
-
-			let dest = parts.next().unwrap_or_exit(&format!("Found invalid map content {line}"), 1);
-			let src = parts.next().unwrap_or_exit(&format!("Found invalid map content {line}"), 1);
-			let len = parts.next().unwrap_or_exit(&format!("Found invalid map content {line}"), 1);
-
-			current_map.mappings.insert(src..src+len, dest);
-		}
-	}
+	
+	let maps = get_mappings(lines).unwrap_or_exit("Could not parse maps", 1);
 
 	for (_, properties) in seeds.iter_mut() {
 		while let Some(source) = maps
@@ -105,7 +74,7 @@ fn part1<'a, T>(lines: T)
 }
 
 fn part2<'a, T>(lines: T)
-	where T: Iterator<Item = &'a str> {
+where T: Iterator<Item = &'a str> {
 	let mut lines = lines;
 
 	let mut seeds_iter = lines.next()
@@ -121,38 +90,7 @@ fn part2<'a, T>(lines: T)
 		seeds.push(start..start+len)
 	}
 
-	let mut maps = Vec::new();
-
-	for line in lines {
-		let line = line.trim();
-		if line.is_empty() {
-			continue;
-		}
-
-		if line.ends_with(" map:") {
-			let parts = line
-				.split_once(' ').unwrap_or_exit(&format!("Found invalid map head {line}"), 1)
-				.0.split_once("-to-")
-				.unwrap_or_exit(&format!("Found invalid map head {line}"), 1);
-
-			maps.push(Map {
-				source_name: parts.0,
-				dest_name: parts.1,
-				mappings: HashMap::new()
-			})
-		} else {
-			let current_map = maps.last_mut().unwrap_or_exit(&format!("Found invalid map head {line}"), 1);
-			let mut parts = line
-				.splitn(3, ' ')
-				.map(|n| n.parse::<u64>().unwrap_or_exit(&format!("Found invalid map content {line}"), 1));
-
-			let dest = parts.next().unwrap_or_exit(&format!("Found invalid map content {line}"), 1);
-			let src = parts.next().unwrap_or_exit(&format!("Found invalid map content {line}"), 1);
-			let len = parts.next().unwrap_or_exit(&format!("Found invalid map content {line}"), 1);
-
-			current_map.mappings.insert(src..src+len, dest);
-		}
-	}
+	let maps = get_mappings(lines).unwrap_or_exit("Could not parse maps", 1);
 
 	let mut seed_props = HashMap::new();
 	let mut min_loc_part2 = u64::MAX;
@@ -186,6 +124,44 @@ fn part2<'a, T>(lines: T)
 	}
 
 	println!("Lowest location (Part 2): {min_loc_part2}");
+}
+
+fn get_mappings<'a, T>(lines: T) -> Result<Vec<Map<'a>>, String>
+where T: Iterator<Item = &'a str> {
+	let mut maps = Vec::new();
+
+	for line in lines {
+		let line = line.trim();
+		if line.is_empty() {
+			continue;
+		}
+
+		if line.ends_with(" map:") {
+			let parts = line
+				.split_once(' ').ok_or(format!("Found invalid map head {line}"))?
+				.0.split_once("-to-")
+				.ok_or(&format!("Found invalid map head {line}"))?;
+
+			maps.push(Map {
+				source_name: parts.0,
+				dest_name: parts.1,
+				mappings: HashMap::new()
+			})
+		} else {
+			let current_map = maps.last_mut().ok_or(format!("Found invalid map head {line}"))?;
+			let mut parts = line
+				.splitn(3, ' ')
+				.map(|n| n.parse::<u64>().map_err(|_| format!("Found invalid map content {line}")));
+
+			let dest = parts.next().ok_or(format!("Found invalid map content {line}"))??;
+			let src = parts.next().ok_or(format!("Found invalid map content {line}"))??;
+			let len = parts.next().ok_or(format!("Found invalid map content {line}"))??;
+
+			current_map.mappings.insert(src..src+len, dest);
+		}
+	}
+
+	Ok(maps)
 }
 
 #[derive(Debug, Clone)]
