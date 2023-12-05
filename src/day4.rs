@@ -1,4 +1,4 @@
-use std::{process, fs, cmp};
+use std::{process, fs};
 
 use crate::UnwrapOrExit;
 
@@ -16,35 +16,24 @@ pub fn main(args: Vec<String>) {
 	let lines: Vec<&str> = content.lines().collect();
 
 	let mut sum = 0;
-	let mut cards: Vec<usize> = (0..lines.len()).map(|_| 1).collect();
+	let mut cards = vec![1; lines.len()];
 	for  (i, line) in lines.iter().enumerate() {
-		let start = line.find(':').unwrap_or_exit(&format!("line {line} does not contain a valid card (missing colon ':')"), 1) + 1;
-		let end = line.find('|').unwrap_or_exit(&format!("line {line} does not contain a valid card (missing pipe '|')"), 1);
+		let numstrs = line
+			.split_once(':')
+			.and_then(|(_, s)| s.split_once('|'))
+			.unwrap_or_exit(&format!("line {line} does not contain a valid card (unable to split winning numbers from own numbers)"), 1);
 
-		let mut numstr = line[start..end].trim();
-		let mut nums = Vec::new();
-		while !numstr.is_empty() {
-			let num_end = numstr.find(|c: char| !c.is_ascii_digit()).unwrap_or(numstr.len());
-			let num = &numstr[..num_end];
-			nums.push(num.parse::<u32>().unwrap_or_exit(&format!("line {line} does not contain a valid card (unable to parse numbers)"), 1));
-			numstr = numstr[num_end..].trim();
-		}
+		let nums: Vec<u32> = numstrs.0
+			.split_whitespace()
+			.map(|n| n.parse().unwrap_or_exit(&format!("line {line} does not contain a valid card (unable to parse winning numbers)"), 1))
+			.collect();
 		
-		let mut numstr = line[end+2..].trim();
-		let mut points = 0;
-		let mut count = 0;
-		while !numstr.is_empty() {
-			let num_end = numstr.find(|c: char| !c.is_ascii_digit()).unwrap_or(numstr.len());
-			let num = &numstr[..num_end];
-			let num = num.parse::<u32>().unwrap_or_exit(&format!("line {line} does not contain a valid card (unable to parse numbers)"), 1);
+		let count = numstrs.1
+			.split_whitespace()
+			.filter(|n| nums.contains(&n.parse().unwrap_or_exit(&format!("line {line} does not contain a valid card (unable to parse own numbers)"), 1)))
+			.count();
 
-			if nums.contains(&num) {
-				points *= 2;
-				points = cmp::max(points, 1);
-				count += 1
-			}
-			numstr = numstr[num_end..].trim();
-		}
+		let points = if count > 0 { 2u32.pow(count as u32 - 1) } else { 0 };
 
 		let instances = cards[i];
 		for num in i+1..i+count+1 {

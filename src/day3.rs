@@ -25,7 +25,7 @@ pub fn main(args: Vec<String>) {
 
 			let mut counts = false;
 			if i > 0 {
-				let start = cmp::max(0, j as isize - 1) as usize;
+				let start = j.saturating_sub(1);
 				let end = cmp::min(lines[i-1].len(), num_end + 1);
 				if let Some(j) = lines[i-1][start..end].find(|c: char| !c.is_ascii_digit() && c != '.') {
 					counts = true;
@@ -44,7 +44,7 @@ pub fn main(args: Vec<String>) {
 			}
 
 			if i + 2 < lines.len() {
-				let start = cmp::max(0, j as isize - 1) as usize;
+				let start = j.saturating_sub(1);
 				let end = cmp::min(lines[i+1].len(), num_end + 1);
 				if let Some(j) = lines[i+1][start..end].find(|c: char| !c.is_ascii_digit() && c != '.') {
 					counts = true;
