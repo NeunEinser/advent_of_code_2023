@@ -4,6 +4,7 @@ use crate::UnwrapOrExit;
 
 const PART_2: bool = true;
 
+/// https://adventofcode.com/2023/day/7
 pub fn main(args: Vec<String>) {
 	
 	let syntax = format!("Syntax: {} {} <file path>", args[0], args[1]);
