@@ -2,6 +2,8 @@ use std::{process, fs, fmt::Debug, collections::{BTreeSet, HashMap}, cmp::Orderi
 
 use crate::UnwrapOrExit;
 
+const PART_2: bool = true;
+
 pub fn main(args: Vec<String>) {
 	
 	let syntax = format!("Syntax: {} {} <file path>", args[0], args[1]);
@@ -60,6 +62,12 @@ impl CardHand {
 		for card in self.cards {
 			let amount = card_counts.entry(card).or_insert(0);
 			*amount += 1;
+		}
+		if PART_2 && card_counts.len() > 1 {
+			if let Some(c) = card_counts.remove(&Card::Jack) {
+				let (_, value) = card_counts.iter_mut().max_by(|(_, first), (_, second)| first.cmp(second)).expect("Should have at least one element");
+				*value += c;
+			}
 		}
 		let sorted_counts: BTreeSet<u32> = card_counts.values().copied().collect();
 		match sorted_counts.last().expect("Card counts should have at least one element") {
@@ -137,9 +145,9 @@ impl Card {
 			Card::Ace => 12,
 			Card::King => 11,
 			Card::Queen => 10,
-			Card::Jack => 9,
-			Card::Ten => 8,
-			v=> *v as u8 - b'2'
+			Card::Jack => if PART_2 { 0 } else { 9 },
+			Card::Ten => if PART_2 { 9 } else { 8 },
+			v=> *v as u8 - if PART_2 { b'1' } else { b'2' }
 		}
 	}
 }
