@@ -1,0 +1,146 @@
+use std::{process, fs};
+
+use crate::UnwrapOrExit;
+/// https://adventofcode.com/2023/day/10
+pub fn main(args: Vec<String>) {
+	
+	let syntax = format!("Syntax: {} {} <file path>", args[0], args[1]);
+
+	if args.len() != 3 {
+		eprintln!("{syntax}");
+		process::exit(1);
+	}
+	let content = fs::read_to_string(&args[2]).unwrap_or_exit("Could not read file content as Utf-8 string", 1);
+	let content: Vec<&str> = content.lines().collect();
+
+	let start_y = content.iter().position(|l| l.contains('S')).unwrap_or_exit("Could not find Start", 1);
+	let start_x = content[start_y].bytes().position(|c| c == b'S').expect("Line should contain start");
+
+	let maze: Vec<Vec<Tile>> = content.iter().map(|l| {
+		l.bytes().map(|b| {
+			match b {
+				b'|' => Tile::NS,
+				b'-' => Tile::EW,
+				b'L' => Tile::NE,
+				b'J' => Tile::NW,
+				b'7' => Tile::SW,
+				b'F' => Tile::SE,
+				b'.' => Tile::None,
+				b'S' => {
+					let mut ns = 0;
+					let mut ew = 0;
+
+					if start_y > 0 {
+						let north = *content[start_y-1].as_bytes().get(start_x).unwrap_or_exit("Inconsistent line length", 1);
+						if north == b'|' || north == b'7' || north == b'F' {
+							ns = 1;
+						}
+					}
+					if start_y + 1 < content.len() {
+						let south = *content[start_y+1].as_bytes().get(start_x).unwrap_or_exit("Inconsistent line length", 1);
+						if south == b'|' || south == b'L' || south == b'J' {
+							ns = 2;
+						}
+					}
+					if start_x + 1 < content[start_y].len() {
+						let east = content[start_y].as_bytes()[start_x + 1];
+						if east == b'-' || east == b'J' || east == b'7' {
+							ew = 1;
+						}
+					}
+					if start_x > 0 {
+						let west = content[start_y].as_bytes()[start_x - 1];
+						if west == b'-' || west == b'L' || west == b'F' {
+							ew = 2;
+						}
+					}
+
+					match ns {
+						0 => Tile::EW,
+						1 => if ew == 1 { Tile::NE } else { Tile::NW },
+						2 => if ew == 1 { Tile::SE } else { Tile::SW },
+						_ => unreachable!()
+					}
+				},
+				b => {
+					eprintln!("Invalid pipe symbol {}", b as char);
+					process::exit(1);
+				}
+			}
+		}).collect::<Vec<Tile>>()
+	}).collect();
+
+	// println!("Maze: {maze:#?}");
+
+	let mut x = start_x;
+	let mut y = start_y;
+	let mut length = 1u32;
+	let mut come_from = Direction::None;
+
+	while length == 1 || x != start_x || y != start_y {
+		let dirs = maze[y][x].directions();
+		let dir = *dirs.iter().filter(|d| **d != come_from).next().unwrap();
+		(x, y) = dir.apply(x, y);
+		come_from = dir.opposite();
+		length += 1;
+	}
+
+	println!("{}", length / 2);
+}
+
+#[repr(u8)]
+#[derive(Debug, Copy, Clone, Ord, Eq, PartialEq, PartialOrd, Hash)]
+enum Tile {
+	NS = b'|',
+	EW = b'-',
+	NE = b'L',
+	NW = b'J',
+	SW = b'7',
+	SE = b'F',
+	None = b'.',
+}
+
+impl Tile {
+	pub fn directions(&self) -> [Direction; 2] {
+		match self {
+			Tile::NS => [ Direction::North, Direction::South ],
+			Tile::EW => [ Direction::East, Direction::West ],
+			Tile::NE => [ Direction::North, Direction::East ],
+			Tile::NW => [ Direction::North, Direction::West ],
+			Tile::SW => [ Direction::South, Direction::West ],
+			Tile::SE =>  [ Direction::South, Direction::East ],
+			Tile::None => [ Direction::None; 2 ],
+		}
+	}
+}
+
+#[derive(Debug, Copy, Clone, Ord, Eq, PartialEq, PartialOrd, Hash)]
+enum Direction {
+	North,
+	East,
+	South,
+	West,
+	None
+}
+
+impl Direction {
+	pub fn apply(&self, x: usize, y: usize) -> (usize, usize) {
+		match self {
+			Direction::North => (x, y-1),
+			Direction::East => (x+1, y),
+			Direction::South => (x, y+1),
+			Direction::West => (x-1, y),
+			Direction::None => (x, y), 
+		}
+	}
+
+	pub fn opposite(&self) -> Self {
+		match self {
+			Direction::North => Direction::South,
+			Direction::East => Direction::West,
+			Direction::South => Direction::North,
+			Direction::West => Direction::East,
+			Direction::None => Direction::None,
+}
+	}
+}
