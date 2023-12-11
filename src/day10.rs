@@ -79,7 +79,7 @@ pub fn main(args: Vec<String>) {
 
 	while pipe_loop.len() == 1 || x != start_x || y != start_y {
 		let dirs = maze[y][x].directions();
-		let dir = *dirs.iter().filter(|d| **d != come_from).next().unwrap();
+		let dir = *dirs.iter().find(|d| **d != come_from).unwrap();
 		(x, y) = dir.apply(x, y);
 		come_from = dir.opposite();
 		pipe_loop.insert((x, y));
@@ -93,40 +93,32 @@ pub fn main(args: Vec<String>) {
 		let prev = new_borders;
 		new_borders = Vec::new();
 		for (x, y) in prev.iter().copied() {
-			if y > 0 {
-				if x == 0 || !pipe_loop.contains(&(x-1, y-1)) || !maze[y-1][x-1].directions().contains(&Direction::East) {
-					if outside_tile_borders.insert((x, y-1)) {
-						new_borders.push((x, y-1));
-					}
-				}
+			if y > 0
+				&& (x == 0 || !pipe_loop.contains(&(x-1, y-1)) || !maze[y-1][x-1].directions().contains(&Direction::East))
+				&& outside_tile_borders.insert((x, y-1)) {
+				new_borders.push((x, y-1));
 			}
-			if y < maze.len() {
-				if x == 0 || !pipe_loop.contains(&(x-1, y)) || !maze[y][x-1].directions().contains(&Direction::East) {
-					if outside_tile_borders.insert((x, y+1)) {
-						new_borders.push((x, y+1));
-					}
-				}
+			if y < maze.len()
+				&& (x == 0 || !pipe_loop.contains(&(x-1, y)) || !maze[y][x-1].directions().contains(&Direction::East))
+				&& outside_tile_borders.insert((x, y+1)) {
+				new_borders.push((x, y+1));
 			}
-			if x > 0 {
-				if y == 0  || !pipe_loop.contains(&(x-1, y-1)) || !maze[y-1][x-1].directions().contains(&Direction::South) {
-					if outside_tile_borders.insert((x-1, y)) {
-						new_borders.push((x-1, y));
-					}
-				}
+			if x > 0
+				&& (y == 0  || !pipe_loop.contains(&(x-1, y-1)) || !maze[y-1][x-1].directions().contains(&Direction::South))
+				&& outside_tile_borders.insert((x-1, y)) {
+				new_borders.push((x-1, y));
 			}
-			if x < maze[0].len() {
-				if y == 0 || !pipe_loop.contains(&(x, y-1)) || !maze[y-1][x].directions().contains(&Direction::South) {
-					if outside_tile_borders.insert((x+1, y)) {
-						new_borders.push((x+1, y));
-					}
-				}
+			if x < maze[0].len()
+				&& (y == 0 || !pipe_loop.contains(&(x, y-1)) || !maze[y-1][x].directions().contains(&Direction::South))
+				&& outside_tile_borders.insert((x+1, y)) {
+				new_borders.push((x+1, y));
 			}
 		}
 	}
 
 	let mut outside_count = 0;
-	for y in 0..maze.len() {
-		for x in 0..maze[y].len() {
+	for (y, row) in maze.iter().enumerate() {
+		for x in 0..row.len() {
 			if outside_tile_borders.contains(&(x, y)) && outside_tile_borders.contains(&(x+1, y)) && outside_tile_borders.contains(&(x, y+1)) && outside_tile_borders.contains(&(x+1, y+1)) {
 				outside_count += 1;
 			}

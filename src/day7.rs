@@ -92,14 +92,14 @@ impl CardHand {
 impl Ord for CardHand {
     fn cmp(&self, other: &Self) -> Ordering {
 		if self.kind() != other.kind() {
-			return self.kind().cmp(&other.kind());
+			self.kind().cmp(&other.kind())
 		} else {
 			for i in 0..5 {
 				if self.cards[i] != other.cards[i] {
 					return self.cards[i].cmp(&other.cards[i]);
 				}
 			}
-			return Ordering::Equal;
+			Ordering::Equal
 		}
     }
 }

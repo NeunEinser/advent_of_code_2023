@@ -54,6 +54,7 @@ pub fn main(args: Vec<String>) {
 
 	let mut count = 1u64;
 	let mut path = first_line.chars().cycle();
+	#[allow(clippy::type_complexity)]
 	let mut unknown_cycle: Vec<(&str, Vec<(&str, u64, u64)>)> = graph.keys().filter(|n| n.ends_with('A')).map(|n| (*n, Vec::new())).collect();
 	let mut cycles = Vec::new();
 
