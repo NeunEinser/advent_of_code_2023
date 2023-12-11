@@ -1,4 +1,4 @@
-use std::{process, fs};
+use std::{process, fs, collections::HashSet};
 
 use crate::UnwrapOrExit;
 /// https://adventofcode.com/2023/day/10
@@ -74,18 +74,65 @@ pub fn main(args: Vec<String>) {
 
 	let mut x = start_x;
 	let mut y = start_y;
-	let mut length = 1u32;
 	let mut come_from = Direction::None;
+	let mut pipe_loop = HashSet::from([(x, y)]);
 
-	while length == 1 || x != start_x || y != start_y {
+	while pipe_loop.len() == 1 || x != start_x || y != start_y {
 		let dirs = maze[y][x].directions();
 		let dir = *dirs.iter().filter(|d| **d != come_from).next().unwrap();
 		(x, y) = dir.apply(x, y);
 		come_from = dir.opposite();
-		length += 1;
+		pipe_loop.insert((x, y));
 	}
 
-	println!("{}", length / 2);
+	println!("Furthest point: {}", pipe_loop.len() / 2);
+
+	let mut outside_tile_borders = HashSet::from([(0, 0)]);
+	let mut new_borders = vec![(0, 0)];
+	while !new_borders.is_empty() {
+		let prev = new_borders;
+		new_borders = Vec::new();
+		for (x, y) in prev.iter().copied() {
+			if y > 0 {
+				if x == 0 || !pipe_loop.contains(&(x-1, y-1)) || !maze[y-1][x-1].directions().contains(&Direction::East) {
+					if outside_tile_borders.insert((x, y-1)) {
+						new_borders.push((x, y-1));
+					}
+				}
+			}
+			if y < maze.len() {
+				if x == 0 || !pipe_loop.contains(&(x-1, y)) || !maze[y][x-1].directions().contains(&Direction::East) {
+					if outside_tile_borders.insert((x, y+1)) {
+						new_borders.push((x, y+1));
+					}
+				}
+			}
+			if x > 0 {
+				if y == 0  || !pipe_loop.contains(&(x-1, y-1)) || !maze[y-1][x-1].directions().contains(&Direction::South) {
+					if outside_tile_borders.insert((x-1, y)) {
+						new_borders.push((x-1, y));
+					}
+				}
+			}
+			if x < maze[0].len() {
+				if y == 0 || !pipe_loop.contains(&(x, y-1)) || !maze[y-1][x].directions().contains(&Direction::South) {
+					if outside_tile_borders.insert((x+1, y)) {
+						new_borders.push((x+1, y));
+					}
+				}
+			}
+		}
+	}
+
+	let mut outside_count = 0;
+	for y in 0..maze.len() {
+		for x in 0..maze[y].len() {
+			if outside_tile_borders.contains(&(x, y)) && outside_tile_borders.contains(&(x+1, y)) && outside_tile_borders.contains(&(x, y+1)) && outside_tile_borders.contains(&(x+1, y+1)) {
+				outside_count += 1;
+			}
+		}
+	}
+	println!("Tiles inside loop: {}", maze.len() * maze[0].len() - pipe_loop.len() - outside_count);
 }
 
 #[repr(u8)]
