@@ -70,8 +70,6 @@ pub fn main(args: Vec<String>) {
 		}).collect::<Vec<Tile>>()
 	}).collect();
 
-	// println!("Maze: {maze:#?}");
-
 	let mut x = start_x;
 	let mut y = start_y;
 	let mut come_from = Direction::None;
@@ -84,8 +82,6 @@ pub fn main(args: Vec<String>) {
 		come_from = dir.opposite();
 		pipe_loop.insert((x, y));
 	}
-
-	println!("Furthest point: {}", pipe_loop.len() / 2);
 
 	let mut outside_tile_borders = HashSet::from([(0, 0)]);
 	let mut new_borders = vec![(0, 0)];
@@ -116,14 +112,27 @@ pub fn main(args: Vec<String>) {
 		}
 	}
 
+	println!("Maze: ");
 	let mut outside_count = 0;
 	for (y, row) in maze.iter().enumerate() {
-		for x in 0..row.len() {
+		for (x, tile) in row.iter().enumerate() {
 			if outside_tile_borders.contains(&(x, y)) && outside_tile_borders.contains(&(x+1, y)) && outside_tile_borders.contains(&(x, y+1)) && outside_tile_borders.contains(&(x+1, y+1)) {
 				outside_count += 1;
+				print!("O");
+			} else if pipe_loop.contains(&(x, y)) {
+				if x == start_x && y == start_y {
+					print!("S");
+				} else {
+					print!("{}", *tile as u8 as char);
+				}
+			} else {
+				print!("I");
 			}
 		}
+		println!();
 	}
+
+	println!("Furthest point: {}", pipe_loop.len() / 2);
 	println!("Tiles inside loop: {}", maze.len() * maze[0].len() - pipe_loop.len() - outside_count);
 }
 
