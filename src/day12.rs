@@ -81,7 +81,7 @@ fn get_arrangements<'a, 'b>(springs: &'a [SpringState], nums: &'b [usize], cache
 		springs = get_slice_with_first_non_operational_after(springs, 1);
 	}
 
-	return arrangements;
+	arrangements
 }
 
 fn get_slice_with_first_non_operational_after(slice: &[SpringState], after: usize) -> &[SpringState] {

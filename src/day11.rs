@@ -38,8 +38,7 @@ pub fn main(args: Vec<String>) {
 
 	let mut sum = 0;
 	for (i, (x, y)) in galaxies.iter().copied().enumerate() {
-		for j in i+1..galaxies.len() {
-			let (other_x, other_y) = galaxies[j];
+		for (other_x, other_y) in galaxies.iter().skip(i+1).copied() {
 			let dist = x.abs_diff(other_x) + y.abs_diff(other_y);
 			// println!("distance between {i} ({x}, {y}) and {j} ({other_x}, {other_y}): {dist}");
 			sum += dist
