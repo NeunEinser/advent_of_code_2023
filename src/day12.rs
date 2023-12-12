@@ -4,12 +4,15 @@ use crate::UnwrapOrExit;
 /// https://adventofcode.com/2023/day/12
 pub fn main(args: Vec<String>) {
 	
-	let syntax = format!("Syntax: {} {} <file path>", args[0], args[1]);
+	let syntax = format!("Syntax: {} {} <file path> [part1|part2]", args[0], args[1]);
 
-	if args.len() != 3 {
+	if args.len() < 3 || args.len() > 4 {
 		eprintln!("{syntax}");
 		process::exit(1);
 	}
+	let part2 = args.len() == 3 || args[3] == "part2";
+	let repetitions = if part2 { 5 } else { 1 };
+
 	let content = fs::read_to_string(&args[2]).unwrap_or_exit("Could not read file content as Utf-8 string", 1);
 	
 	let mut sum = 0;
@@ -21,14 +24,14 @@ pub fn main(args: Vec<String>) {
 				'#' => SpringState::Damaged,
 				_ => SpringState::Unknown
 			}))
-			.take(5)
+			.take(repetitions)
 			.flat_map(|i| i.chain(iter::once(SpringState::Unknown)))
-			.take((springs.len()+1) * 5 - 1)
+			.take((springs.len()+1) * repetitions - 1)
 			.collect();
 
 		let nums: Result<Vec<usize>, _> = iter::repeat(
 			nums.split(',').map(str::parse))
-			.take(5)
+			.take(repetitions)
 			.flatten()
 			.collect();
 		let nums = nums.unwrap_or_exit(&format!("Could not parse num section of line {line}"), 1);
