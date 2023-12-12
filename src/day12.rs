@@ -42,7 +42,7 @@ pub fn main(args: Vec<String>) {
 	println!("{sum}");
 }
 
-fn get_arrangements<'a, 'b>(springs: &'a [SpringState], nums: &'b [usize], cache: &mut HashMap<(&'a [SpringState], &'b[usize]), u64>) -> u64 {
+fn get_arrangements<'a, 'b>(springs: &'a [SpringState], nums: &'b [usize], cache: &mut HashMap<(&'a [SpringState], &'b [usize]), u64>) -> u64 {
 	if springs.is_empty() || nums.is_empty() {
 		return 0;
 	}
@@ -53,20 +53,20 @@ fn get_arrangements<'a, 'b>(springs: &'a [SpringState], nums: &'b [usize], cache
 		if springs.len() >= nums[0]
 		&& springs[..nums[0]].iter().all(|s| *s == SpringState::Damaged || *s == SpringState::Unknown)
 		&& (springs.len() == nums[0] || springs[nums[0]] == SpringState::Operational || springs[nums[0]] == SpringState::Unknown) {
+
 			arrangements += if nums.len() > 1 {
-				if springs.len() > nums[0]+1 {
-					// This would be nicer as cache.entry(...).or_insert_with(...), but the borrow checker cries there
-					// because the recursive call requires the cache, borrowing the cache mutable twice.
-					let key = (get_slice_with_first_non_operational_after(springs, nums[0]+1), &nums[1..]);
-					if cache.contains_key(&key) {
-						cache[&key]
-					} else {
-						let result = get_arrangements(key.0, key.1, cache);
-						cache.insert(key, result);
-						result
-					}
+				if springs.len() <= nums[0]+1 {
+					break;
+				}
+				// This would be nicer as cache.entry(...).or_insert_with(...), but the borrow checker cries there
+				// because the recursive call requires the cache, borrowing the cache mutable twice.
+				let key = (get_slice_with_first_non_operational_after(springs, nums[0]+1), &nums[1..]);
+				if cache.contains_key(&key) {
+					cache[&key]
 				} else {
-					0
+					let result = get_arrangements(key.0, key.1, cache);
+					cache.insert(key, result);
+					result
 				}
 			} else if springs.len() <= nums[0] || springs[nums[0]..].iter().all(|s| *s == SpringState::Unknown || *s == SpringState::Operational) {
 				1
