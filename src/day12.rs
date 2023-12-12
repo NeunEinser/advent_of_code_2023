@@ -42,7 +42,7 @@ pub fn main(args: Vec<String>) {
 	println!("{sum}");
 }
 
-fn get_arrangements<'a, 'b>(springs: &'a [SpringState], nums: &'b [usize], cache: &mut HashMap<(&'a [SpringState], &'b [usize]), u64>) -> u64 {
+fn get_arrangements(springs: &[SpringState], nums: &[usize], cache: &mut HashMap<(usize, usize), u64>) -> u64 {
 	if springs.is_empty() || nums.is_empty() {
 		return 0;
 	}
@@ -60,11 +60,13 @@ fn get_arrangements<'a, 'b>(springs: &'a [SpringState], nums: &'b [usize], cache
 				}
 				// This would be nicer as cache.entry(...).or_insert_with(...), but the borrow checker cries there
 				// because the recursive call requires the cache, borrowing the cache mutable twice.
-				let key = (get_slice_with_first_non_operational_after(springs, nums[0]+1), &nums[1..]);
+				let springs = get_slice_with_first_non_operational_after(springs, nums[0]+1);
+				let nums = &nums[1..];
+				let key = (springs.len(), nums.len());
 				if cache.contains_key(&key) {
 					cache[&key]
 				} else {
-					let result = get_arrangements(key.0, key.1, cache);
+					let result = get_arrangements(springs, nums, cache);
 					cache.insert(key, result);
 					result
 				}
