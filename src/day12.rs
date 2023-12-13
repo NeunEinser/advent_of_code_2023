@@ -58,10 +58,10 @@ fn get_arrangements(springs: &[SpringState], nums: &[usize], cache: &mut HashMap
 				if springs.len() <= nums[0]+1 {
 					break;
 				}
-				// This would be nicer as cache.entry(...).or_insert_with(...), but the borrow checker cries there
-				// because the recursive call requires the cache, borrowing the cache mutable twice.
 				let springs = get_slice_with_first_non_operational_after(springs, nums[0]+1);
 				let nums = &nums[1..];
+				// This would be nicer as cache.entry(...).or_insert_with(...), but the borrow checker cries there
+				// because the recursive call requires the cache, borrowing the cache mutable twice.
 				let key = (springs.len(), nums.len());
 				if cache.contains_key(&key) {
 					cache[&key]

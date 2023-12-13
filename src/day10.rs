@@ -189,6 +189,6 @@ impl Direction {
 			Direction::South => Direction::North,
 			Direction::West => Direction::East,
 			Direction::None => Direction::None,
-}
+		}
 	}
 }
