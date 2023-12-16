@@ -46,7 +46,6 @@ pub fn main(args: Vec<String>) {
 		})
 	}) {
 		beam.clear();
-		last_splits.clear();
 		last_splits.push((start_x, start_y, start_dir));
 
 		while !last_splits.is_empty() {
