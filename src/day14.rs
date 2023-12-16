@@ -1,4 +1,4 @@
-use std::{process, fs, iter};
+use std::{process, fs};
 
 use crate::UnwrapOrExit;
 /// https://adventofcode.com/2023/day/14
@@ -22,7 +22,7 @@ pub fn main(args: Vec<String>) {
 		sum += calculate_row_part1(line, &mut round_rocks, row);
 	}
 
-	sum += calculate_row_part1(&iter::repeat('#').take(round_rocks.len()).collect::<String>(), &mut round_rocks, content.lines().count());
+	sum += calculate_row_part1(&"#".repeat(round_rocks.len()), &mut round_rocks, content.lines().count());
 
 	println!("Part 1: {sum}");
 
@@ -108,15 +108,15 @@ fn tilt_north(arrangement: &mut [Vec<Tile>]) {
 }
 
 fn tilt_west(arrangement: &mut [Vec<Tile>]) {
-	for y in 0..arrangement.len() {
+	for row in arrangement {
 		let mut dest_x = 0;
 
-		for x in 0..arrangement[y].len() {
-			match arrangement[y][x] {
+		for x in 0..row.len() {
+			match row[x] {
 				Tile::Stopper => dest_x = x + 1,
 				Tile::RoundRock => {
-					arrangement[y][x] = Tile::Empty;
-					arrangement[y][dest_x] = Tile::RoundRock;
+					row[x] = Tile::Empty;
+					row[dest_x] = Tile::RoundRock;
 					dest_x += 1;
 				},
 				_ => ()
@@ -131,11 +131,11 @@ fn tilt_south(arrangement: &mut [Vec<Tile>]) {
 
 		for y in (0..arrangement.len()).rev() {
 			match arrangement[y][x] {
-				Tile::Stopper => dest_y = y.overflowing_sub(1).0,
+				Tile::Stopper => dest_y = y.wrapping_sub(1),
 				Tile::RoundRock => {
 					arrangement[y][x] = Tile::Empty;
 					arrangement[dest_y][x] = Tile::RoundRock;
-					dest_y = dest_y.overflowing_sub(1).0;
+					dest_y = dest_y.wrapping_sub(1);
 				},
 				_ => ()
 			}
@@ -144,16 +144,16 @@ fn tilt_south(arrangement: &mut [Vec<Tile>]) {
 }
 
 fn tilt_east(arrangement: &mut [Vec<Tile>]) {
-	for y in 0..arrangement.len() {
-		let mut dest_x = arrangement[y].len() - 1;
+	for row in arrangement {
+		let mut dest_x = row.len() - 1;
 
-		for x in (0..arrangement[y].len()).rev() {
-			match arrangement[y][x] {
-				Tile::Stopper => dest_x = x.overflowing_sub(1).0,
+		for x in (0..row.len()).rev() {
+			match row[x] {
+				Tile::Stopper => dest_x = x.wrapping_sub(1),
 				Tile::RoundRock => {
-					arrangement[y][x] = Tile::Empty;
-					arrangement[y][dest_x] = Tile::RoundRock;
-					dest_x = dest_x.overflowing_sub(1).0;
+					row[x] = Tile::Empty;
+					row[dest_x] = Tile::RoundRock;
+					dest_x = dest_x.wrapping_sub(1);
 				},
 				_ => ()
 			}

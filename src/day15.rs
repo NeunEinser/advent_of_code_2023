@@ -24,8 +24,8 @@ pub fn main(args: Vec<String>) {
 	let mut hash = HashMap::new();
 	for instr in content.split(',') {
 		let instr = instr.trim();
-		if instr.ends_with('-') {
-			hash.remove(&instr[..instr.len()-1]);
+		if let Some(key) = instr.strip_suffix('-') {
+			hash.remove(key);
 		} else {
 			let (key, val) = instr.split_once('=').unwrap_or_exit(&format!("Invalid instruction {instr}"), 1);
 			let val: u8 = val.parse().unwrap_or_exit(&format!("Invalid value in instruction {instr}"), 1);

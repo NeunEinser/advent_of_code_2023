@@ -20,7 +20,7 @@ pub fn main(args: Vec<String>) {
 
 	let mut solution = 0;
 	'pattern: for pattern in &patterns {
-		'axis: for mirror_axis in 1..pattern.get(0).unwrap_or_exit("Found empty pattern", 1).len() {
+		'axis: for mirror_axis in 1..pattern.first().unwrap_or_exit("Found empty pattern", 1).len() {
 			let start = (mirror_axis*2).saturating_sub(pattern[0].len());
 			let mut found_smudge = false; 
 			for x in start..mirror_axis {
