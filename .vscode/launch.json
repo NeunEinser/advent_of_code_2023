@@ -75,6 +75,14 @@
 			"program": "${workspaceFolder}/target/debug/advent_of_code_2023.exe",
 			"args": [ "day13", "input" ],
 			"cwd": "${workspaceRoot}"
+		},
+		{
+			"name": "Debug Day 14",
+			"type": "cppvsdbg",
+			"request": "launch",
+			"program": "${workspaceFolder}/target/debug/advent_of_code_2023.exe",
+			"args": [ "day14", "input" ],
+			"cwd": "${workspaceRoot}"
 		}
 	]
 }
