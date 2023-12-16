@@ -19,7 +19,7 @@ pub fn main(args: Vec<String>) {
 			.fold(0u8, |hash, c| hash.wrapping_add(c).wrapping_mul(17)))
 		.fold(0, |sum, h| sum + h as u32);
 
-	println!("Part1: {sum}");
+	println!("Part 1: {sum}");
 
 	let mut hash = HashMap::new();
 	for instr in content.split(',') {
@@ -28,7 +28,7 @@ pub fn main(args: Vec<String>) {
 			hash.remove(key);
 		} else {
 			let (key, val) = instr.split_once('=').unwrap_or_exit(&format!("Invalid instruction {instr}"), 1);
-			let val: u8 = val.parse().unwrap_or_exit(&format!("Invalid value in instruction {instr}"), 1);
+			let val = val.parse().unwrap_or_exit(&format!("Invalid value in instruction {instr}"), 1);
 			hash.insert(key, val);
 		}
 	}
@@ -36,7 +36,7 @@ pub fn main(args: Vec<String>) {
 	let mut sum = 0;
 	for (i, bucket) in hash.get_raw().iter().enumerate() {
 		for (j, (_, value)) in bucket.iter().copied().enumerate() {
-			sum += (i + 1) * (j + 1) * value as usize;
+			sum += (i + 1) * (j + 1) * value;
 		}
 	}
 
@@ -44,12 +44,12 @@ pub fn main(args: Vec<String>) {
 }
 
 struct HashMap<'a> {
-	buckets: [Vec<(&'a str, u8)>; 256]
+	buckets: [Vec<(&'a str, usize)>; 256]
 }
 
 impl<'a> HashMap<'a> {
 	pub fn new() -> Self {
-		let mut buckets: [MaybeUninit<Vec<(&'a str, u8)>>; 256] = unsafe { MaybeUninit::uninit().assume_init() };
+		let mut buckets: [MaybeUninit<Vec<(&'a str, usize)>>; 256] = unsafe { MaybeUninit::uninit().assume_init() };
 		for b in buckets.iter_mut() {
 			b.write(Vec::new());
 		}
@@ -59,7 +59,7 @@ impl<'a> HashMap<'a> {
 		}
 	}
 
-	pub fn insert(&mut self, key: &'a str, val: u8) {
+	pub fn insert(&mut self, key: &'a str, val: usize) {
 		let bucket = &mut self.buckets[Self::get_hash(key) as usize];
 
 		if let Some(i) = bucket.iter().position(|(k, _)| *k == key) {
@@ -69,14 +69,14 @@ impl<'a> HashMap<'a> {
 		}
 	}
 
-	pub fn remove(&mut self, key: &'a str) -> Option<u8> {
+	pub fn remove(&mut self, key: &'a str) -> Option<usize> {
 		let bucket = &mut self.buckets[Self::get_hash(key) as usize];
 
 		let i = bucket.iter().position(|(k, _)| *k == key)?;
 		Some(bucket.remove(i).1)
 	}
 
-	pub fn get_raw(&self) -> &[Vec<(&'a str, u8)>; 256] {
+	pub fn get_raw(&self) -> &[Vec<(&'a str, usize)>; 256] {
 		&self.buckets
 	}
 
