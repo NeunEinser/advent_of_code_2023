@@ -16,6 +16,7 @@ mod day13;
 mod day14;
 mod day15;
 mod day16;
+mod day17;
 
 fn main() {
 	let args: Vec<String> = env::args().collect();
@@ -42,6 +43,7 @@ fn main() {
 		"day14" => day14::main(args),
 		"day15" => day15::main(args),
 		"day16" => day16::main(args),
+		"day17" => day17::main(args),
 		cmd => {
 			eprintln!("Syntax: {} day<1-25>", args[0]);
 			eprintln!("Unknown command: {}", cmd);
