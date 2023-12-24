@@ -1,4 +1,4 @@
-use std::{process, fs, collections::HashMap};
+use std::{process, fs, collections::HashMap, ops::RangeInclusive};
 
 use crate::UnwrapOrExit;
 /// https://adventofcode.com/2023/day/16
@@ -84,20 +84,48 @@ pub fn main(args: Vec<String>) {
 		};
 
 		if accepted {
-			sum += variables.iter().map(|&(_, v)| v).sum::<i32>();
+			sum += variables.iter().map(|&(_, v)| v).sum::<u64>();
 		}
 	}
 
-	println!("Part1: {sum}")
+	const MAX_RANGE: RangeInclusive<u64> = 1..=4000;
+	let ranges = [('x', MAX_RANGE), ('m', MAX_RANGE), ('a', MAX_RANGE), ('s', MAX_RANGE)];
+	println!("Possibilities:");
+	let possibilities = get_possibilities(&ranges[..], &workflows, "in").unwrap_or_exit("Failed to traverse all possibilities", 1);
+
+
+	println!("Part1: {sum}");
+	println!("Part2: {possibilities}");
+}
+
+fn get_possibilities(ranges: &[(char, RangeInclusive<u64>)], workflows: &HashMap<&str, Vec<Rule<'_>>>, current_workflow: &str) -> Result<u64, String> {
+	let workflow = workflows.get(current_workflow).ok_or(format!("Workflow {current_workflow} does not exist"))?;
+	let mut possibilities = 0;
+	let mut ranges = ranges.to_vec();
+	for rule in workflow {
+		let (successful, unsuccessful, target) = rule.get_with_reduced_range(&ranges);
+		possibilities += match target {
+			Target::Workflow(wf) => get_possibilities(&successful, workflows, wf)?,
+			Target::Accepted => {
+				let product = successful.iter().map(|(_, r)| r.clone().count() as u64).product();
+				println!("{current_workflow}: {product}; {successful:?}");
+				product
+			},
+			Target::Rejected => 0
+		};
+		ranges = unsuccessful;
+	}
+
+	Ok(possibilities)
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 enum Rule<'a> {
 	Always(Target<'a>),
-	Conditional{ variable: char, condition: Condition, compare_val: i32, target: Target<'a> }
+	Conditional{ variable: char, condition: Condition, compare_val: u64, target: Target<'a> }
 }
 impl<'a> Rule<'a> {
-	pub fn get_matching(&self, variables: &[(char, i32)]) -> Option<Target> {
+	pub fn get_matching(&self, variables: &[(char, u64)]) -> Option<Target> {
 		match self {
 			Rule::Always(t) => Some(*t),
 			Rule::Conditional { variable, condition, compare_val, target } => {
@@ -106,6 +134,42 @@ impl<'a> Rule<'a> {
 					Condition::GT => if v > *compare_val { Some(*target) } else { None },
 					Condition::LT => if v < *compare_val { Some(*target) } else { None }
 				}
+			}
+		}
+	}
+
+	pub fn get_with_reduced_range(&self, ranges: &[(char, RangeInclusive<u64>)]) -> (Vec<(char, RangeInclusive<u64>)>, Vec<(char, RangeInclusive<u64>)>, Target) {
+		match self {
+			Rule::Always(target) => (ranges.to_vec(), Vec::new(), *target),
+			Rule::Conditional { variable, condition, compare_val, target } => {
+				let successful: Vec<_> = ranges.iter()
+					.map(|(v, r)| {
+						if v != variable {
+							(*v, r.clone())
+						} else {
+							let ranges = match condition {
+								Condition::GT => *compare_val+1..=*r.end(),
+								Condition::LT => *r.start()..=*compare_val-1,
+							};
+							(*v, ranges)
+						}
+					})
+					.collect();
+				let unsuccessful: Vec<_> = ranges.iter()
+					.map(|(v, r)| {
+						if v != variable {
+							(*v, r.clone())
+						} else {
+							let ranges = match condition {
+								Condition::GT => *r.start()..=*compare_val,
+								Condition::LT => *compare_val..=*r.end(),
+							};
+							(*v, ranges)
+						}
+					})
+					.collect();
+
+				(successful, unsuccessful, *target)
 			}
 		}
 	}
