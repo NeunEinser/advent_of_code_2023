@@ -49,33 +49,83 @@ pub fn main(args: Vec<String>) {
 	let mut high_count = 0;
 	let mut low_count = 0;
 	let mut receivers = VecDeque::new();
+	let rx_input = modules.iter().find(|&(_, m)| m.outputs().contains(&"rx"))
+		.unwrap_or_exit("Could not finc module named rx", 1);
+	if modules.iter().any(|(name, m)| m.outputs().contains(&"rx") && name != rx_input.0) {
+		eprintln!("Found multiple inputs for rx module");
+		process::exit(1);
+	}
+	let mut rx_inputs: HashMap<_, _> = if let Module::Conjunction(conj) = rx_input.1 {
+		conj.inputs.keys().map(|&o| (o, 0u64)).collect()
+	} else {
+		eprintln!("Expected input of rx to be a conjunction module");
+		process::exit(1);
+	};
 
-	for _ in 0..1000 {
+	for i in 0u64.. {
+		if i > 1000 && rx_inputs.values().all(|&v| v > 0) {
+			break;
+		}
+
 		receivers.clear();
-		low_count += 1;
-		println!("button -low -> broadcaster");
+		if i < 1000 {
+			low_count += 1;
+			println!("button -low -> broadcaster");
+		}
 		receivers.push_back(("broadcaster", "button", false));
 
 		while let Some((module_name, source, signal)) = receivers.pop_front() {
+			if signal && rx_inputs.contains_key(&source) && rx_inputs[&source] == 0 {
+				println!("Min presses for {source}: {}", i+1);
+				rx_inputs.insert(source, i + 1);
+			}
+
 			if let Some(module) = modules.get_mut(module_name) {
 				if let Some((signal, recs)) = module.process_signal(source, signal) {
 					for &receiver in recs {
 						receivers.push_back((receiver, module_name, signal));
-						println!("{module_name} {} -> {receiver}", if signal {"+high"} else {"-low"});
+						if i < 1000 {
+							println!("{module_name} {} -> {receiver}", if signal {"+high"} else {"-low"});
+						}
 					}
-					if signal {
-						high_count += recs.len() as u64;
-					} else {
-						low_count += recs.len() as u64;
+					if i < 1000 {
+						if signal {
+							high_count += recs.len() as u64;
+						} else {
+							low_count += recs.len() as u64;
+						}
 					}
 				}
 			}
 		}
 
-		println!("\n#####################\n")
+		if i < 1000 {
+			println!("\n#####################\n");
+		}
 	}
 
-	println!("{} * {} = {}", low_count, high_count, low_count * high_count);
+	println!("Part1: {} * {} = {}", low_count, high_count, low_count * high_count);
+	let mut res = 1u64; 
+	for &v in rx_inputs.values() {
+		res = lcm(res, v);
+	}
+	println!("Part2: lcm of {:?} = {}", rx_inputs, res);
+}
+
+fn gcd(a: u64, b: u64) -> u64 {
+	let mut a = a;
+	let mut b = b;
+
+	while a % b > 0 {
+		let r = a % b;
+		a = b;
+		b = r;
+	}
+	b
+}
+
+fn lcm(a: u64, b: u64) -> u64 {
+	a / gcd(a, b) * b
 }
 
 enum Module<'a, 'b> {
